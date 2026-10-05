@@ -1,0 +1,87 @@
+<data name="OrderDataService" serviceNamespace="" serviceGroup="" transports="http https" disableStreaming="true">
+
+    <description>Order Data Service</description>
+
+    <config id="TrainingDB">
+        <property name="driverClassName">com.mysql.cj.jdbc.Driver</property>
+        <property name="url">jdbc:mysql://localhost:3306/TrainingDB</property>
+        <property name="username">root</property>
+    </config>
+
+    <query id="InsertOrderQuery" useConfig="TrainingDB">
+        <sql>
+            INSERT INTO orders
+            (
+                id,
+                customer_id,
+                product_name,
+                quantity,
+                total_amount,
+                status
+            )
+            VALUES
+            (
+                :id,
+                :customerId,
+                :productName,
+                :quantity,
+                :totalAmount,
+                'NEW'
+            )
+        </sql>
+
+        <param name="id" sqlType="INTEGER"/>
+        <param name="customerId" sqlType="INTEGER"/>
+        <param name="productName" sqlType="STRING"/>
+        <param name="quantity" sqlType="INTEGER"/>
+        <param name="totalAmount" sqlType="DOUBLE"/>
+    </query>
+
+    <query id="GetOrderByIdQuery" useConfig="TrainingDB">
+        <sql>
+            SELECT
+                id,
+                customer_id,
+                product_name,
+                quantity,
+                total_amount,
+                status,
+                created_at
+            FROM orders
+            WHERE id = :id
+        </sql>
+
+        <param name="id" sqlType="INTEGER"/>
+
+        <result outputType="json">
+            {
+                "order": {
+                    "id": "$id",
+                    "customerId": "$customer_id",
+                    "productName": "$product_name",
+                    "quantity": "$quantity",
+                    "totalAmount": "$total_amount",
+                    "status": "$status",
+                    "createdAt": "$created_at"
+                }
+            }
+        </result>
+    </query>
+
+    <resource method="POST" path="Order">
+        <call-query href="InsertOrderQuery">
+            <with-param name="id" query-param="id"/>
+            <with-param name="customerId" query-param="customerId"/>
+            <with-param name="productName" query-param="productName"/>
+            <with-param name="quantity" query-param="quantity"/>
+            <with-param name="totalAmount" query-param="totalAmount"/>
+        </call-query>
+    </resource>
+
+    <resource method="GET" path="Order/{id}">
+        <call-query href="GetOrderByIdQuery">
+            <with-param name="id" query-param="id"/>
+        </call-query>
+    </resource>
+
+</data>
